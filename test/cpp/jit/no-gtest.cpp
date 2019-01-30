@@ -31,11 +31,11 @@ std::string runJITCPPTests() {
   testTopologicalIndex();
   testTopologicalMove();
   testSubgraphUtils();
-  testAliasAnalysis();
   testTHNNConv();
   testATenNativeBatchNorm();
   testRegisterFusionCachesKernel();
   testAliasAnalysis();
+  testAliasTracker();
   return out.str();
 }
 
