@@ -10,8 +10,7 @@ bool shouldAnnotate(const TypePtr& type) {
   return type->isSubtypeOf(DynamicType::get()) ||
       type->kind() == TypeKind::ListType ||
       type->kind() == TypeKind::TupleType ||
-      type->kind() == TypeKind::DictType ||
-      type->kind() == TypeKind::VarType ||
+      type->kind() == TypeKind::DictType || type->kind() == TypeKind::VarType ||
       (type->kind() == TypeKind::OptionalType &&
        shouldAnnotate(type->cast<OptionalType>()->getElementType()));
 }
@@ -114,6 +113,15 @@ bool AliasDb::mayAlias(
 }
 
 void AliasDb::getWritesImpl(
+    Block* b,
+    std::unordered_set<const Value*>& ret,
+    bool recurseBlocks) const {
+  for (auto node : b->nodes()) {
+    getWritesImpl(node, ret, recurseBlocks);
+  }
+}
+
+void AliasDb::getWritesImpl(
     Node* n,
     std::unordered_set<const Value*>& ret,
     bool recurseBlocks) const {
@@ -130,11 +138,16 @@ void AliasDb::getWritesImpl(
 
   if (recurseBlocks) {
     for (auto block : n->blocks()) {
-      for (auto node : block->nodes()) {
-        getWritesImpl(node, ret, recurseBlocks);
-      }
+      getWritesImpl(block, ret, recurseBlocks);
     }
   }
+}
+
+// Get all writes by all nodes in a block, recursively exploring sub-blocks
+std::unordered_set<const Value*> AliasDb::getWrites(Block* b) const {
+  std::unordered_set<const Value*> writes;
+  getWritesImpl(b, writes, /*recurseBlocks=*/true);
+  return writes;
 }
 
 std::unordered_set<const Value*> AliasDb::getWrites(Node* n, bool recurseBlocks)
@@ -274,6 +287,10 @@ void AliasDb::analyzeImpl(Node* node) {
     case prim::FusionGroup:
     case prim::DifferentiableGraph:
       return analyzeSubgraph(node);
+    case prim::fork:
+      return analyzeFork(node);
+    case aten::wait:
+      return analyzeWait(node);
     case prim::Constant:
     case prim::DictConstruct:
     case prim::ListConstruct:
@@ -493,6 +510,59 @@ void AliasDb::analyzeExtractor(Node* node) {
 void AliasDb::analyzeChunk(Node* node) {
   for (auto output : node->outputs()) {
     makeAliasOf(output, node->input());
+  }
+}
+
+void AliasDb::analyzeWait(Node* node) {
+  // Do nothing, this node should have already been analyzed by the
+  // corresponding analyzeFork(). See that function for details.
+}
+
+void AliasDb::analyzeFork(Node* node) {
+  const auto subgraph = node->g(attr::Subgraph).get();
+  subgraphToOwner_.insert({subgraph, node});
+
+  const auto subgraphBlock = subgraph->block();
+  mapAliases(subgraphBlock->inputs(), node->inputs());
+  analyze(subgraphBlock);
+
+  // Propagate aliasing and write information from the subgraph outputs to the
+  // outputs of the corresponding aten::wait() calls, since that's where the
+  // values will eventually emerge.
+  const auto fut = node->output();
+  const auto subgraphWrites = getWrites(subgraph->block());
+  for (const auto& use : fut->uses()) {
+    const auto wait = use.user;
+    AT_ASSERT(wait->outputs().size() == subgraph->outputs().size());
+
+    // Propagate aliasing info.
+    mapAliases(wait->outputs(), subgraph->outputs());
+
+    // Propagate write information to the `wait` node.
+    //
+    // We need to do this for all writes in the entire subgraph, so that we
+    // disallow reorders past a call to "aten::wait".
+    //
+    // Consider the following Fork where the subgraph writes to %a:
+    //
+    //   %c : Future[Tensor] = prim::Fork(%a, %b) <-- writes to %a
+    //   ...
+    //   aten::wait(%c)
+    //   aten::use(%a)   <-- we can't move this node before the `wait` safely!
+    //
+    // Say we define the "live interval" of a fork the interval between the
+    // `fork` and its first corresponding `wait` (inclusive).
+    //
+    // Any writes in the subgraph can happen at any point in the live interval,
+    // so it's not safe to re-order any reads to those memory locations from
+    // outside the live interval to inside.
+    //
+    // In reality, any reads *inside* the live interval are undefined behavior,
+    // since the writes may or may not have been executed yet. But we'll let
+    // users do that and shoot themselves in the foot for now.
+    for (const auto write : subgraphWrites) {
+      aliasTracker_->registerWrite(write, wait);
+    }
   }
 }
 
