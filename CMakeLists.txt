@@ -7,6 +7,11 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # even when the C++ one is detected as "AppleClang".
 cmake_policy(SET CMP0010 NEW)
 cmake_policy(SET CMP0025 NEW)
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.23.146.tar.gz"
+    SHA1 "06f44e121e5ac61c8571203ba47ce0b31187d985"
+)
 
 # Suppress warning flags in default MSVC configuration.  It's not
 # mandatory that we do this (and we don't if cmake is old), but it's
