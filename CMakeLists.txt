@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 #cmake_policy(SET CMP0022 NEW)
 #cmake_policy(SET CMP0023 NEW)
 
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.23.122.tar.gz"
+    SHA1 "d8c252862a9900a703167ba703bfb1b17977948f"
+)
+
 # ---[ Project and semantic versioning.
 project(Caffe2 CXX C)
 
