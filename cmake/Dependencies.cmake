@@ -20,6 +20,8 @@ if(NOT BUILD_ATEN_ONLY)
 # ---[ Custom Protobuf
 if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)
   disable_ubsan()
+  hunter_add_package(Protobuf)
+  find_package(Protobuf CONFIG REQUIRED)
   include(${CMAKE_CURRENT_LIST_DIR}/ProtoBuf.cmake)
   enable_ubsan()
 endif()
@@ -254,6 +256,7 @@ list(APPEND Caffe2_DEPENDENCY_LIBS cpuinfo)
 
 # ---[ gflags
 if(USE_GFLAGS)
+  hunter_add_package(gflags)
   include(${CMAKE_CURRENT_LIST_DIR}/public/gflags.cmake)
   if (NOT TARGET gflags)
     message(WARNING
@@ -266,6 +269,7 @@ endif()
 
 # ---[ Google-glog
 if(USE_GLOG)
+  hunter_add_package(glog)
   include(${CMAKE_CURRENT_LIST_DIR}/public/glog.cmake)
   if (TARGET glog::glog)
     set(CAFFE2_USE_GOOGLE_GLOG 1)
@@ -431,12 +435,9 @@ endif()
 
 # ---[ OpenCV
 if(USE_OPENCV)
-  # OpenCV 3
-  find_package(OpenCV 3 QUIET COMPONENTS core highgui imgproc imgcodecs videoio video)
-  if(NOT OpenCV_FOUND)
-    # OpenCV 2
-    find_package(OpenCV QUIET COMPONENTS core highgui imgproc)
-  endif()
+  hunter_add_package(OpenCV)
+  find_package(OpenCV CONFIG REQUIRED COMPONENTS core highgui imgproc imgcodecs videoio video)
+
   if(OpenCV_FOUND)
     include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
     list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenCV_LIBS})
@@ -480,19 +481,8 @@ list(APPEND Caffe2_DEPENDENCY_LIBS fp16)
 # ---[ EIGEN
 # Due to license considerations, we will only use the MPL2 parts of Eigen.
 set(EIGEN_MPL2_ONLY 1)
-if (USE_SYSTEM_EIGEN_INSTALL)
-  find_package(Eigen3)
-  if(EIGEN3_FOUND)
-    message(STATUS "Found system Eigen at " ${EIGEN3_INCLUDE_DIR})
-  else()
-    message(STATUS "Did not find system Eigen. Using third party subdirectory.")
-    set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
-    caffe2_update_option(USE_SYSTEM_EIGEN_INSTALL OFF)
-  endif()
-else()
-  message(STATUS "Using third party subdirectory Eigen.")
-  set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
-endif()
+hunter_add_package(Eigen)
+find_package(Eigen3 CONFIG REQUIRED)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 # ---[ Python + Numpy
@@ -1320,6 +1310,10 @@ if (NOT BUILD_ATEN_MOBILE)
   SET(AT_MKLDNN_ENABLED 0)
   SET(CAFFE2_USE_MKLDNN OFF)
   IF (USE_MKLDNN)
+    # Anything else this works on?
+    IF (CMAKE_SYSTEM MATCHES "Linux" OR APPLE)
+      hunter_add_package(mkldnn)
+    endif()
     INCLUDE(${CMAKE_CURRENT_LIST_DIR}/public/mkldnn.cmake)
     IF(MKLDNN_FOUND)
       SET(AT_MKLDNN_ENABLED 1)
