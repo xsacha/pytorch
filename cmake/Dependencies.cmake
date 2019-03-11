@@ -295,6 +295,12 @@ if (NOT TARGET cpuinfo)
 endif()
 list(APPEND Caffe2_DEPENDENCY_LIBS cpuinfo)
 
+# Used in ATen but has to be 'found' earlier
+if (NOT MSVC AND NOT EMSCRIPTEN)
+    hunter_add_package(sleef)
+    find_package(sleef CONFIG REQUIRED)
+endif()
+
 # ---[ gflags
 if(USE_GFLAGS)
   hunter_add_package(gflags)
