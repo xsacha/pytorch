@@ -571,19 +571,10 @@ if(BUILD_PYTHON)
 endif()
 
 # ---[ pybind11
-find_package(pybind11 CONFIG)
-if(NOT pybind11_FOUND)
-  find_package(pybind11)
-endif()
-
-if(pybind11_FOUND)
-    message(STATUS "System pybind11 found")
-    message(STATUS "pybind11 include dirs: " "${pybind11_INCLUDE_DIRS}")
-    include_directories(SYSTEM ${pybind11_INCLUDE_DIRS})
-else()
-    message(STATUS "Using third_party/pybind11.")
-    include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/../third_party/pybind11/include)
-endif()
+hunter_add_package(pybind11)
+find_package(pybind11 CONFIG REQUIRED)
+target_link_libraries(torch PRIVATE pybind11::pybind11)
+target_link_libraries(caffe2 PRIVATE pybind11::pybind11)
 
 # ---[ MPI
 if(USE_MPI)
@@ -777,12 +768,9 @@ endif()
 
 # ---[ CUB
 if(USE_CUDA)
-  find_package(CUB)
-  if(CUB_FOUND)
-    include_directories(SYSTEM ${CUB_INCLUDE_DIRS})
-  else()
-    include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/../third_party/cub)
-  endif()
+  hunter_add_package(cub)
+  find_package(cub CONFIG REQUIRED)
+  target_link_libraries(caffe2 PRIVATE cub::cub)
 endif()
 
 if(USE_GLOO)
