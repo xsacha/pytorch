@@ -148,45 +148,46 @@ endif(MKLDNN_FOUND)
 
 list(APPEND ATen_CPU_DEPENDENCY_LIBS cpuinfo)
 
-hunter_add_package(sleef)
-find_package(sleef CONFIG REQUIRED)
-list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef::sleef)
-if(FALSE AND NOT MSVC AND NOT EMSCRIPTEN)
-  # Preserve values for the main build
-  set(__aten_sleef_build_shared_libs ${BUILD_SHARED_LIBS})
-  set(__aten_sleef_build_tests ${BUILD_TESTS})
+if(NOT MSVC AND NOT EMSCRIPTEN)
+  hunter_add_package(sleef)
+  find_package(sleef CONFIG REQUIRED)
+  list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef::sleef)
+  if(NOT HUNTER_ENABLED)
+    # Preserve values for the main build
+    set(__aten_sleef_build_shared_libs ${BUILD_SHARED_LIBS})
+    set(__aten_sleef_build_tests ${BUILD_TESTS})
 
-  # Unset our restrictive C++ flags here and reset them later.
-  # Remove this once we use proper target_compile_options.
-  set(OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-  set(CMAKE_CXX_FLAGS)
+    # Unset our restrictive C++ flags here and reset them later.
+    # Remove this once we use proper target_compile_options.
+    set(OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS)
 
-  # Bump up optimization level for sleef to -O1, since at -O0 the compiler
-  # excessively spills intermediate vector registers to the stack
-  # and makes things run impossibly slowly
-  set(OLD_CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-  IF(${CMAKE_C_FLAGS_DEBUG} MATCHES "-O0")
-    string(REGEX REPLACE "-O0" "-O1" CMAKE_C_FLAGS_DEBUG ${OLD_CMAKE_C_FLAGS_DEBUG})
-  ELSE()
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O1")
-  ENDIF()
+    # Bump up optimization level for sleef to -O1, since at -O0 the compiler
+    # excessively spills intermediate vector registers to the stack
+    # and makes things run impossibly slowly
+    set(OLD_CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
+    IF(${CMAKE_C_FLAGS_DEBUG} MATCHES "-O0")
+      string(REGEX REPLACE "-O0" "-O1" CMAKE_C_FLAGS_DEBUG ${OLD_CMAKE_C_FLAGS_DEBUG})
+    ELSE()
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O1")
+    ENDIF()
 
-  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build sleef static" FORCE)
-  set(BUILD_DFT OFF CACHE BOOL "Don't build sleef DFT lib" FORCE)
-  set(BUILD_GNUABI_LIBS OFF CACHE BOOL "Don't build sleef gnuabi libs" FORCE)
-  set(BUILD_TESTS OFF CACHE BOOL "Don't build sleef tests" FORCE)
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/sleef" ${CMAKE_BINARY_DIR}/sleef)
-  set_property(TARGET sleef PROPERTY FOLDER "dependencies")
-  list(APPEND ATen_THIRD_PARTY_INCLUDE ${CMAKE_BINARY_DIR}/include)
-  link_directories(${CMAKE_BINARY_DIR}/sleef/lib)
-  list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build sleef static" FORCE)
+    set(BUILD_DFT OFF CACHE BOOL "Don't build sleef DFT lib" FORCE)
+    set(BUILD_GNUABI_LIBS OFF CACHE BOOL "Don't build sleef gnuabi libs" FORCE)
+    set(BUILD_TESTS OFF CACHE BOOL "Don't build sleef tests" FORCE)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/sleef" ${CMAKE_BINARY_DIR}/sleef)
+    set_property(TARGET sleef PROPERTY FOLDER "dependencies")
+    list(APPEND ATen_THIRD_PARTY_INCLUDE ${CMAKE_BINARY_DIR}/include)
+    link_directories(${CMAKE_BINARY_DIR}/sleef/lib)
+    list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef)
 
-  set(CMAKE_C_FLAGS_DEBUG ${OLD_CMAKE_C_FLAGS_DEBUG})
-  set(CMAKE_CXX_FLAGS ${OLD_CMAKE_CXX_FLAGS})
+    set(CMAKE_C_FLAGS_DEBUG ${OLD_CMAKE_C_FLAGS_DEBUG})
+    set(CMAKE_CXX_FLAGS ${OLD_CMAKE_CXX_FLAGS})
 
-  # Set these back. TODO: Use SLEEF_ to pass these instead
-  set(BUILD_SHARED_LIBS ${__aten_sleef_build_shared_libs} CACHE BOOL "Build shared libs" FORCE)
-  set(BUILD_TESTS ${__aten_sleef_build_tests} CACHE BOOL "Build tests" FORCE)
+    # Set these back. TODO: Use SLEEF_ to pass these instead
+    set(BUILD_SHARED_LIBS ${__aten_sleef_build_shared_libs} CACHE BOOL "Build shared libs" FORCE)
+    set(BUILD_TESTS ${__aten_sleef_build_tests} CACHE BOOL "Build tests" FORCE)
 endif()
 
 IF(USE_CUDA AND NOT USE_ROCM)
