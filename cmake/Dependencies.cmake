@@ -575,8 +575,7 @@ endif()
 # ---[ pybind11
 hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
-target_link_libraries(torch PRIVATE pybind11::pybind11)
-target_link_libraries(caffe2 PRIVATE pybind11::pybind11)
+list(APPEND Caffe2_PUBLIC_DEPENDENCY_LIBS pybind11::pybind11)
 
 # ---[ MPI
 if(USE_MPI)
@@ -772,7 +771,7 @@ endif()
 if(USE_CUDA)
   hunter_add_package(cub)
   find_package(cub CONFIG REQUIRED)
-  target_link_libraries(caffe2 PRIVATE cub::cub)
+  list(APPEND Caffe2_DEPENDENCY_LIBS cub::cub)
 endif()
 
 if(USE_GLOO)
