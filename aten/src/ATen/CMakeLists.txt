@@ -188,6 +188,7 @@ if(NOT MSVC AND NOT EMSCRIPTEN)
     # Set these back. TODO: Use SLEEF_ to pass these instead
     set(BUILD_SHARED_LIBS ${__aten_sleef_build_shared_libs} CACHE BOOL "Build shared libs" FORCE)
     set(BUILD_TESTS ${__aten_sleef_build_tests} CACHE BOOL "Build tests" FORCE)
+  endif()
 endif()
 
 IF(USE_CUDA AND NOT USE_ROCM)
