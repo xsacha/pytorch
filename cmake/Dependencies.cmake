@@ -163,15 +163,13 @@ if(USE_QNNPACK)
     set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
 
     # Directories for QNNPACK dependencies submoduled in Caffe2
-    if (NOT DEFINED CPUINFO_SOURCE_DIR)
-      set(CPUINFO_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/cpuinfo" CACHE STRING "cpuinfo source directory")
-    endif()
+    hunter_add_package(cpuinfo)
+    find_package(cpuinfo CONFIG REQUIRED)
     if (NOT DEFINED QNNPACK_SOURCE_DIR)
       set(QNNPACK_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/QNNPACK" CACHE STRING "QNNPACK source directory")
     endif()
-    if (NOT DEFINED FP16_SOURCE_DIR)
-      set(FP16_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/FP16" CACHE STRING "FP16 source directory")
-    endif()
+    hunter_add_package(FP16)
+    find_package(FP16 CONFIG REQUIRED)
     if (NOT DEFINED FXDIV_SOURCE_DIR)
       set(FXDIV_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/FXdiv" CACHE STRING "FXdiv source directory")
     endif()
@@ -229,8 +227,10 @@ if(USE_NNPACK)
   endif()
 endif()
 
+hunter_add_package(cpuinfo)
+find_package(cpuinfo CONFIG REQUIRED)
 # ---[ Caffe2 uses cpuinfo library in the thread pool
-if (NOT TARGET cpuinfo)
+if (NOT TARGET cpuinfo::cpuinfo)
   if (NOT DEFINED CPUINFO_SOURCE_DIR)
     set(CPUINFO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../third_party/cpuinfo" CACHE STRING "cpuinfo source directory")
   endif()
@@ -254,7 +254,7 @@ if (NOT TARGET cpuinfo)
   # them into a shared library for Caffe2, so they need PIC.
   set_property(TARGET cpuinfo PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
-list(APPEND Caffe2_DEPENDENCY_LIBS cpuinfo)
+list(APPEND Caffe2_DEPENDENCY_LIBS cpuinfo::cpuinfo)
 
 # ---[ gflags
 if(USE_GFLAGS)
@@ -466,8 +466,10 @@ if(USE_FFMPEG)
   endif ()
 endif()
 
+hunter_add_package(FP16)
+find_package(FP16 CONFIG REQUIRED)
 # ---[ Caffe2 depends on FP16 library for half-precision conversions
-if (NOT TARGET fp16)
+if (NOT TARGET FP16::fp16)
   if (NOT DEFINED FP16_SOURCE_DIR)
     set(FP16_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../third_party/FP16" CACHE STRING "FP16 source directory")
   endif()
@@ -478,7 +480,7 @@ if (NOT TARGET fp16)
     "${FP16_SOURCE_DIR}"
     "${CONFU_DEPENDENCIES_BINARY_DIR}/FP16")
 endif()
-list(APPEND Caffe2_DEPENDENCY_LIBS fp16)
+list(APPEND Caffe2_DEPENDENCY_LIBS FP16::fp16)
 
 # ---[ EIGEN
 # Due to license considerations, we will only use the MPL2 parts of Eigen.
