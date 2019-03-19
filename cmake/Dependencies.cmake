@@ -948,6 +948,7 @@ endif()
 # ---[ Onnx
 if(NOT BUILD_ATEN_ONLY)
 if (CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)
+  if(NOT HUNTER_ENABLED)
   if(EXISTS "${CAFFE2_CUSTOM_PROTOC_EXECUTABLE}")
     set(ONNX_CUSTOM_PROTOC_EXECUTABLE ${CAFFE2_CUSTOM_PROTOC_EXECUTABLE})
   endif()
@@ -974,6 +975,13 @@ if (CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../caffe2/onnx/torch_ops")
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../third_party/onnx)
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../third_party/foxi)
+  else()
+  # Add op schemas in "ai.onnx.pytorch" domain
+  add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../caffe2/onnx/torch_ops")
+  hunter_add_package(ONNX)
+  find_package(ONNX CONFIG REQUIRED)
+  # TODO: Foxi
+  endif()
 
   include_directories(${ONNX_INCLUDE_DIRS})
   include_directories(${FOXI_INCLUDE_DIRS})
@@ -981,14 +989,12 @@ if (CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)
   # In mobile build we care about code size, and so we need drop
   # everything (e.g. checker, optimizer) in onnx but the pb definition.
   if (ANDROID OR IOS)
-    caffe2_interface_library(onnx_proto onnx_library)
+    caffe2_interface_library(onnx::onnx_proto onnx_library)
   else()
-    caffe2_interface_library(onnx onnx_library)
+    caffe2_interface_library(onnx::onnx onnx_library)
   endif()
   list(APPEND Caffe2_DEPENDENCY_WHOLE_LINK_LIBS onnx_library)
-  list(APPEND Caffe2_DEPENDENCY_LIBS foxi_loader)
-  # Recover the build shared libs option.
-  set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS})
+  list(APPEND Caffe2_DEPENDENCY_LIBS onnx::onnxifi_loader)
 endif()
 endif()
 
