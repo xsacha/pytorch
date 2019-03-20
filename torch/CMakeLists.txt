@@ -330,7 +330,7 @@ elseif (WERROR)
 endif()
 
 if (MSVC)
-  target_link_libraries(torch onnx onnx_library)
+  target_link_libraries(torch onnx::onnx onnx_library)
 endif()
 
 target_link_libraries(torch caffe2_library)
