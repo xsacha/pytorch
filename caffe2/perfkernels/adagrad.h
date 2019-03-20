@@ -69,10 +69,10 @@ inline void adagrad_update_prefetch_inlined(
 #ifdef CAFFE2_PERFKERNELS_ADAGRAD_H_USE_INTRINSIC
   constexpr size_t kSize = 8;
   for (; i + kSize <= N; i += kSize) {
-    _mm_prefetch(&w_n[i], _MM_HINT_T0);
-    _mm_prefetch(&h_n[i], _MM_HINT_T0);
-    _mm_prefetch(&nw_n[i], _MM_HINT_T0);
-    _mm_prefetch(&nh_n[i], _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&w_n[i]), _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&h_n[i]), _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&nw_n[i]), _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&nh_n[i]), _MM_HINT_T0);
 
     __m256 gi = _mm256_loadu_ps(g + i);
     __m256 hi = _mm256_loadu_ps(h + i);
@@ -115,7 +115,7 @@ inline void rowwise_adagrad_update_inlined(
 
 #ifdef CAFFE2_PERFKERNELS_ADAGRAD_H_USE_INTRINSIC
   constexpr size_t kSize = 8;
-  _mm_prefetch(h_n, _MM_HINT_T0);
+  _mm_prefetch(reinterpret_cast<const char*>(h_n), _MM_HINT_T0);
   __m256 partial_sum = _mm256_setzero_ps();
   for (; i + kSize <= N; i += kSize) {
     __m256 gi = _mm256_loadu_ps(g + i);
@@ -143,7 +143,7 @@ inline void rowwise_adagrad_update_inlined(
   __m256 step = _mm256_set1_ps(float_step);
 
   for (i = 0; i + kSize <= N; i += kSize) {
-    _mm_prefetch(&w_n[i], _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&w_n[i]), _MM_HINT_T0);
 
     __m256 gi = _mm256_loadu_ps(g + i);
     __m256 wi = _mm256_loadu_ps(w + i);
@@ -241,7 +241,7 @@ template <typename SIndex>
 void sparse_adagrad(
     int num_rows, // number of rows reading
     int block_size, // number of parameters per rows
-    std::size_t param_size, // total number of parameters
+    std::uint64_t param_size, // total number of parameters
     const float* w, // input parameters
     const float* g, // input gradients
     const float* h, // input momentums
@@ -256,7 +256,7 @@ void sparse_adagrad(
   void sparse_adagrad_##SIndex##__##ISA(                                 \
       int num_rows,                                                      \
       int block_size,                                                    \
-      std::size_t param_size,                                            \
+      std::uint64_t param_size,                                            \
       const float* w,                                                    \
       const float* g,                                                    \
       const float* h,                                                    \

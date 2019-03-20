@@ -31,6 +31,7 @@ _cvtsh_ss(unsigned short a)
 #undef __CLANG_NEED_FIX
 
 #ifdef _MSC_VER
+#include <cstdint>
 
 // It seems that microsoft msvc does not have a _cvtsh_ss implementation so
 // we will add a dummy version to it.
@@ -38,10 +39,10 @@ _cvtsh_ss(unsigned short a)
 static inline float
 _cvtsh_ss(unsigned short x) {
   union {
-    uint32_t intval;
+    std::uint32_t intval;
     float floatval;
   } t1;
-  uint32_t t2, t3;
+  std::uint32_t t2, t3;
   t1.intval = x & 0x7fff; // Non-sign bits
   t2 = x & 0x8000; // Sign bit
   t3 = x & 0x7c00; // Exponent
