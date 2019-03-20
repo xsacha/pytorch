@@ -146,7 +146,7 @@ option(BUILDING_WITH_TORCH_LIBS "Tell cmake if Caffe2 is being built alongside t
 # But some users don't use sccache; this override is for them.
 option(MSVC_Z7_OVERRIDE "Work around sccache bug by replacing /Zi and /ZI with /Z7 when using MSVC (if you are not using sccache, you can turn this OFF)" ON)
 
-SET(ONNX_NAMESPACE "onnx_c2" CACHE STRING "onnx namespace")
+#SET(ONNX_NAMESPACE "onnx_c2" CACHE STRING "onnx namespace")
 
 # For MSVC,
 # 1. Replace /Zi and /ZI with /Z7
