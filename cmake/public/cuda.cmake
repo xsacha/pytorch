@@ -304,11 +304,11 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 # Add onnx namepsace definition to nvcc
-if (ONNX_NAMESPACE)
-  list(APPEND CUDA_NVCC_FLAGS "-DONNX_NAMESPACE=${ONNX_NAMESPACE}")
-else()
-  list(APPEND CUDA_NVCC_FLAGS "-DONNX_NAMESPACE=onnx_c2")
-endif()
+#if (ONNX_NAMESPACE)
+#  list(APPEND CUDA_NVCC_FLAGS "-DONNX_NAMESPACE=${ONNX_NAMESPACE}")
+#else()
+#  list(APPEND CUDA_NVCC_FLAGS "-DONNX_NAMESPACE=onnx_c2")
+#endif()
 
 # CUDA 9.0 & 9.1 require GCC version <= 5
 # Although they support GCC 6, but a bug that wasn't fixed until 9.2 prevents
