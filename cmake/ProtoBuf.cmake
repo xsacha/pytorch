@@ -72,6 +72,8 @@ macro(custom_protobuf_find)
   endif()
 endmacro()
 
+include(cmake/public/protobuf.cmake)
+if (NOT HUNTER_ENABLED)
 # Main entry for protobuf. If we are building on Android, iOS or we have hard
 # coded BUILD_CUSTOM_PROTOBUF, we will hard code the use of custom protobuf
 # in the submodule.
@@ -95,6 +97,8 @@ elseif (BUILD_CUSTOM_PROTOBUF)
   custom_protobuf_find()
 else()
   include(cmake/public/protobuf.cmake)
+endif()
+
 endif()
 
 if ((NOT TARGET protobuf::libprotobuf) AND (NOT TARGET protobuf::libprotobuf-lite))
