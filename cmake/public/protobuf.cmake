@@ -1,7 +1,8 @@
 # ---[ Protobuf
 
+hunter_add_package(Protobuf)
 # We will try to use the config mode first, and then manual find.
-find_package(Protobuf CONFIG QUIET)
+find_package(Protobuf CONFIG REQUIRED)
 if (NOT Protobuf_FOUND)
   find_package(Protobuf MODULE QUIET)
 endif()
