@@ -941,7 +941,7 @@ if (CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)
   find_package(ONNX CONFIG REQUIRED)
 
   include_directories(${ONNX_INCLUDE_DIRS})
-  add_definitions(-DONNX_NAMESPACE=${ONNX_NAMESPACE})
+  #add_definitions(-DONNX_NAMESPACE=${ONNX_NAMESPACE})
   # In mobile build we care about code size, and so we need drop
   # everything (e.g. checker, optimizer) in onnx but the pb definition.
   if (ANDROID OR IOS)
