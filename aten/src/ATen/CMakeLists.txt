@@ -202,8 +202,6 @@ endif(MKLDNN_FOUND)
 list(APPEND ATen_CPU_DEPENDENCY_LIBS cpuinfo::cpuinfo)
 
 if(NOT MSVC AND NOT EMSCRIPTEN)
-  hunter_add_package(sleef)
-  find_package(sleef CONFIG REQUIRED)
   list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef::sleef)
   if(NOT HUNTER_ENABLED)
   # Preserve values for the main build
