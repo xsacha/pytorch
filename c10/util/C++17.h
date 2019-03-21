@@ -213,7 +213,7 @@ constexpr auto apply(F&& f, Tuple&& t) -> decltype(detail::apply_impl(
 
 
 
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304
+#if !defined(_MSC_VER) && defined(__cpp_constexpr) && __cpp_constexpr >= 201304
 #  define AT_CPP14_CONSTEXPR constexpr
 #else
 #  define AT_CPP14_CONSTEXPR
