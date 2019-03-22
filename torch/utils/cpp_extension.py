@@ -315,7 +315,7 @@ class BuildExtension(build_ext, object):
                             cflags = []
                         cmd = [
                             nvcc, '-c', src, '-o', obj, '-Xcompiler',
-                            '/wd4819', '-Xcompiler', '/MD'
+                            '/wd4819'
                         ] + include_list + cflags
                     elif isinstance(self.cflags, dict):
                         cflags = self.cflags['cxx']

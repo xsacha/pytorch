@@ -631,7 +631,7 @@ if IS_WINDOWS:
     # structured exception handling (SEH)
     # /DNOMINMAX removes builtin min/max functions
     # /wdXXXX disables warning no. XXXX
-    extra_compile_args = ['/MD', '/Z7',
+    extra_compile_args = ['/Z7',
                           '/EHa', '/DNOMINMAX',
                           '/wd4267', '/wd4251', '/wd4522', '/wd4522', '/wd4838',
                           '/wd4305', '/wd4244', '/wd4190', '/wd4101', '/wd4996',
