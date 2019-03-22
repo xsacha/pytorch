@@ -362,27 +362,6 @@ if (NOT MSVC)
   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-fPIC")
 endif()
 
-# Debug and Release symbol support
-if (MSVC)
-  if ((${CMAKE_BUILD_TYPE} MATCHES "Release") OR (${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo") OR (${CMAKE_BUILD_TYPE} MATCHES "MinSizeRel"))
-    if (${CAFFE2_USE_MSVC_STATIC_RUNTIME})
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MT")
-    else()
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MD")
-    endif()
-  elseif(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    if (${CAFFE2_USE_MSVC_STATIC_RUNTIME})
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MTd")
-    else()
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MDd")
-    endif()
-  else()
-    message(FATAL_ERROR "Unknown cmake build type: " ${CMAKE_BUILD_TYPE})
-  endif()
-elseif (CUDA_DEVICE_DEBUG)
-  list(APPEND CUDA_NVCC_FLAGS "-g" "-G")  # -G enables device code debugging symbols
-endif()
-
 # Set expt-relaxed-constexpr to suppress Eigen warnings
 list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr")
 
