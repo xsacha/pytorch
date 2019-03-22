@@ -50,7 +50,7 @@ install(FILES ${CMAKE_BINARY_DIR}/caffe2/core/macros.h
 if (NOT BUILD_ATEN_MOBILE)
   SET(OPT_FLAG "-O3 ")
   IF(MSVC)
-    SET(OPT_FLAG "/Ox /fp:strict ")
+    SET(OPT_FLAG "/fp:strict ")
   ENDIF()
   SET(VCOMP_LIB "vcomp")
 
