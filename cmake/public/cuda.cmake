@@ -362,17 +362,6 @@ if (NOT MSVC)
   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-fPIC")
 endif()
 
-# Debug and Release symbol support
-if (MSVC)
-  if (${CAFFE2_USE_MSVC_STATIC_RUNTIME})
-    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MT$<$<CONFIG:Debug>:d>")
-  else()
-    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler" "-MD$<$<CONFIG:Debug>:d>")
-  endif()
-elseif (CUDA_DEVICE_DEBUG)
-  list(APPEND CUDA_NVCC_FLAGS "-g" "-G")  # -G enables device code debugging symbols
-endif()
-
 # Set expt-relaxed-constexpr to suppress Eigen warnings
 list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr")
 
