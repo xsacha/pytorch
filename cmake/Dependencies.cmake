@@ -584,17 +584,11 @@ endif()
 # ---[ LevelDB
 # ---[ Snappy
 if(USE_LEVELDB)
-  find_package(LevelDB)
-  find_package(Snappy)
-  if(LEVELDB_FOUND AND SNAPPY_FOUND)
-    include_directories(SYSTEM ${LevelDB_INCLUDE})
-    list(APPEND Caffe2_DEPENDENCY_LIBS ${LevelDB_LIBRARIES})
-    include_directories(SYSTEM ${Snappy_INCLUDE_DIR})
-    list(APPEND Caffe2_DEPENDENCY_LIBS ${Snappy_LIBRARIES})
-  else()
-    message(WARNING "Not compiling with LevelDB. Suppress this warning with -DUSE_LEVELDB=OFF")
-    caffe2_update_option(USE_LEVELDB OFF)
-  endif()
+  hunter_add_package(leveldb)
+  find_package(leveldb CONFIG REQUIRED)
+  hunter_add_package(Snappy)
+  find_package(Snappy CONFIG REQUIRED)
+  list(APPEND Caffe2_DEPENDENCY_LIBS leveldb::leveldb Snappy::snappy)
 endif()
 
 # ---[ NUMA
