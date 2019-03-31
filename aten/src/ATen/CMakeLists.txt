@@ -221,6 +221,7 @@ list(APPEND ATen_CPU_DEPENDENCY_LIBS cpuinfo)
 
 if(NOT MSVC AND NOT EMSCRIPTEN AND NOT INTERN_BUILD_MOBILE)
   list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef::sleef)
+  if(NOT HUNTER_ENABLED)
   # Preserve values for the main build
   set(__aten_sleef_build_shared_libs ${BUILD_SHARED_LIBS})
   set(__aten_sleef_build_tests ${BUILD_TESTS})
@@ -269,6 +270,7 @@ if(NOT MSVC AND NOT EMSCRIPTEN AND NOT INTERN_BUILD_MOBILE)
   # Set these back. TODO: Use SLEEF_ to pass these instead
   set(BUILD_SHARED_LIBS ${__aten_sleef_build_shared_libs} CACHE BOOL "Build shared libs" FORCE)
   set(BUILD_TESTS ${__aten_sleef_build_tests} CACHE BOOL "Build tests" FORCE)
+  endif(NOT HUNTER_ENABLED)
 endif()
 
 IF(USE_CUDA AND NOT USE_ROCM)
