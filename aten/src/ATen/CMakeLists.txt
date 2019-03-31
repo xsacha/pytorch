@@ -199,7 +199,7 @@ if(MKLDNN_FOUND)
   list(APPEND ATen_CPU_DEPENDENCY_LIBS ${MKLDNN_LIBRARIES})
 endif(MKLDNN_FOUND)
 
-list(APPEND ATen_CPU_DEPENDENCY_LIBS cpuinfo)
+list(APPEND ATen_CPU_DEPENDENCY_LIBS cpuinfo::cpuinfo)
 
 if(NOT MSVC AND NOT EMSCRIPTEN)
   hunter_add_package(sleef)
