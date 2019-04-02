@@ -272,7 +272,6 @@ target_compile_definitions(torch PUBLIC _THP_CORE)
 if(MSVC)
   target_compile_options(torch PUBLIC
     ${MSVC_RUNTIME_LIBRARY_OPTION}
-    /Z7
     /EHa
     /DNOMINMAX
     /wd4267
