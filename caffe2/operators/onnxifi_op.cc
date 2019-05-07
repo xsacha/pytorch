@@ -48,10 +48,9 @@ void SetInputTensorDescriptorTypeAndBuffer(
     CAFFE_THROW(
         "Unsupported Int8Tensor type in ONNXIFI: ", cpu_tensor.dtype().name());
   }
-  desc->quantizationParams = 1;
-  desc->quantizationAxis = 1;
-  desc->scales = &cpu_int8tensor.scale;
-  desc->biases = &cpu_int8tensor.zero_point;
+  desc->is_quantized = true;
+  desc->scale = cpu_int8tensor.scale;
+  desc->bias = cpu_int8tensor.zero_point;
 }
 
 TypeMeta OnnxifiTypeToDataType(uint64_t onnxifi_type) {
@@ -90,10 +89,9 @@ void SetOutputTensorDescriptorTypeAndBuffer(
 
   desc->buffer = reinterpret_cast<onnxPointer>(
       cpu_tensor->raw_mutable_data(OnnxifiTypeToDataType(onnxifi_type)));
-  desc->quantizationParams = 1;
-  desc->quantizationAxis = 1;
-  desc->scales = &cpu_int8tensor->scale;
-  desc->biases = &cpu_int8tensor->zero_point;
+  desc->is_quantized = true;
+  desc->scale = cpu_int8tensor->scale;
+  desc->bias = cpu_int8tensor->zero_point;
 }
 void BlobToTensorDescriptor(
     const std::string& name,
@@ -133,7 +131,7 @@ void BlobToTensorDescriptor(
     desc->dimensions = shape.size();
     shapes->emplace_back(shape.cbegin(), shape.cend());
     desc->shape = shapes->back().data();
-    desc->quantizationParams = 0;
+    desc->is_quantized = 0;
   }
 }
 } // namespace
