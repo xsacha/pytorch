@@ -428,14 +428,9 @@ NetDef OnnxifiTransformer::SubnetToOnnxifiOpViaC2(
   shape_arg->set_name("input_shape_info");
   onnxifi_net.clear_external_input();
   for (const auto& i : total_inputs_vec) {
-    auto input = i;
-    const auto it = renaming_map.find(i);
-    if (it != renaming_map.end()) {
-      input = it->second;
-    }
-    onnxifi_net.add_external_input(input);
+    onnxifi_net.add_external_input(i);
     shape_arg->mutable_tensors()->Add()->CopyFrom(
-        wrapShapeInfoIntoTensorProto(input, shape_hints.at(i)));
+        wrapShapeInfoIntoTensorProto(i, shape_hints.at(i)));
   }
 
   // Compute output shape hints
@@ -923,19 +918,7 @@ void OnnxifiTransformer::transform(
   }
 
   if (opts_.debug) {
-<<<<<<< HEAD
     dumpNet(*pred_net, shape_hints, "debug_ssa_net.pb_txt");
-=======
-    NetDef shape_net(*pred_net);
-    auto* shape_arg = shape_net.add_arg();
-    shape_arg->set_name("shape_info");
-    for (const auto& kv : shape_hints) {
-      auto t = wrapShapeInfoIntoTensorProto(kv.first, kv.second);
-      t.add_int32_data(static_cast<int32_t>(kv.second.dim_type));
-      shape_arg->mutable_tensors()->Add()->CopyFrom(t);
-    }
-    WriteProtoToTextFile(shape_net, "debug_ssa_net.pb_txt");
->>>>>>> parent of 19fe2b9db... Adding quantized tensor shape/type info support for caffe2=>glow in caffe2 side (#18621)
   }
 
   // Get backend id
