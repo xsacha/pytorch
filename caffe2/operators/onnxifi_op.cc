@@ -34,26 +34,7 @@ void SetInputTensorDescriptorTypeAndBuffer(
   }
 }
 
-void SetInputTensorDescriptorTypeAndBuffer(
-    const int8::Int8TensorCPU& cpu_int8tensor,
-    onnxTensorDescriptorV1* desc) {
-  const Tensor& cpu_tensor = cpu_int8tensor.t;
-  if (cpu_tensor.template IsType<uint8_t>()) {
-    desc->dataType = ONNXIFI_DATATYPE_UINT8;
-    desc->buffer = reinterpret_cast<onnxPointer>(cpu_tensor.data<uint8_t>());
-  } else if (cpu_tensor.template IsType<int32_t>()) {
-    desc->dataType = ONNXIFI_DATATYPE_INT32;
-    desc->buffer = reinterpret_cast<onnxPointer>(cpu_tensor.data<int32_t>());
-  } else {
-    CAFFE_THROW(
-        "Unsupported Int8Tensor type in ONNXIFI: ", cpu_tensor.dtype().name());
-  }
-  desc->is_quantized = true;
-  desc->scale = cpu_int8tensor.scale;
-  desc->bias = cpu_int8tensor.zero_point;
-}
-
-TypeMeta OnnxifiTypeToDataType(uint64_t onnxifi_type) {
+TypeMeta OnnixfiTypeToDataType(uint64_t onnxifi_type) {
   static std::map<uint64_t, TypeMeta> data_type_map {
     {ONNXIFI_DATATYPE_FLOAT32, TypeMeta::Make<float>()},
     {ONNXIFI_DATATYPE_INT32, TypeMeta::Make<int>()},
@@ -64,10 +45,7 @@ TypeMeta OnnxifiTypeToDataType(uint64_t onnxifi_type) {
     {ONNXIFI_DATATYPE_UINT16, TypeMeta::Make<uint16_t>()},
   };
   const auto it = data_type_map.find(onnxifi_type);
-  CAFFE_ENFORCE(
-      it != data_type_map.end(),
-      "Unsupported ONNXIFI data type: ",
-      onnxifi_type);
+  CAFFE_ENFORCE(it != data_type_map.end(), "Unsupported ONXNIFI data type: ", onnxifi_type);
   return it->second;
 }
 
@@ -76,23 +54,9 @@ void SetOutputTensorDescriptorTypeAndBuffer(
     Tensor* cpu_tensor,
     onnxTensorDescriptorV1* desc) {
   desc->dataType = onnxifi_type;
-  desc->buffer = reinterpret_cast<onnxPointer>(
-      cpu_tensor->raw_mutable_data(OnnxifiTypeToDataType(onnxifi_type)));
+  desc->buffer = reinterpret_cast<onnxPointer>(cpu_tensor->raw_mutable_data(OnnixfiTypeToDataType(onnxifi_type)));
 }
 
-void SetOutputTensorDescriptorTypeAndBuffer(
-    uint64_t onnxifi_type,
-    int8::Int8TensorCPU* cpu_int8tensor,
-    onnxTensorDescriptorV1* desc) {
-  desc->dataType = onnxifi_type;
-  Tensor* cpu_tensor = &(cpu_int8tensor->t);
-
-  desc->buffer = reinterpret_cast<onnxPointer>(
-      cpu_tensor->raw_mutable_data(OnnxifiTypeToDataType(onnxifi_type)));
-  desc->is_quantized = true;
-  desc->scale = cpu_int8tensor->scale;
-  desc->bias = cpu_int8tensor->zero_point;
-}
 void BlobToTensorDescriptor(
     const std::string& name,
     Workspace* ws,
@@ -100,39 +64,26 @@ void BlobToTensorDescriptor(
     std::vector<std::vector<uint64_t>>* shapes) {
   const Blob* blob = ws->GetBlob(name);
   CAFFE_ENFORCE(blob, "Blob ", name, " doesn't exist");
-  const bool is_int8tensor =
-      blob->meta().id() == TypeMeta::Id<int8::Int8TensorCPU>();
+
   // Memory type
-  // We only allow weights to be CPU tensor or int8tensor for now
+  // We only allow weights to be CPU tensor for now
   CAFFE_ENFORCE(
-      (BlobIsTensorType(*blob, CPU) || BlobIsInt8TensorCPUType(*blob)),
+      BlobIsTensorType(*blob, CPU),
       "Initialization blob ",
       name,
-      " needs to be TensorCPU or Int8TensorCPU");
+      " needs to be TensorCPU");
   desc->tag = ONNXIFI_TAG_TENSOR_DESCRIPTOR_V1;
   desc->memoryType = ONNXIFI_MEMORY_TYPE_CPU;
 
-  if (is_int8tensor) {
-    // Data type
-    const auto& cpu_int8tensor = blob->template Get<int8::Int8TensorCPU>();
-    const auto& cpu_tensor = cpu_int8tensor.t;
-    SetInputTensorDescriptorTypeAndBuffer(cpu_int8tensor, desc);
-    // Set dims
-    const auto shape = cpu_tensor.sizes();
-    desc->dimensions = shape.size();
-    shapes->emplace_back(shape.cbegin(), shape.cend());
-    desc->shape = shapes->back().data();
-  } else {
-    // Data type
-    const auto& cpu_tensor = blob->template Get<TensorCPU>();
-    SetInputTensorDescriptorTypeAndBuffer(cpu_tensor, desc);
-    // Set dims
-    const auto shape = cpu_tensor.sizes();
-    desc->dimensions = shape.size();
-    shapes->emplace_back(shape.cbegin(), shape.cend());
-    desc->shape = shapes->back().data();
-    desc->is_quantized = 0;
-  }
+  // Data type
+  const auto& cpu_tensor = blob->template Get<TensorCPU>();
+  SetInputTensorDescriptorTypeAndBuffer(cpu_tensor, desc);
+
+  // Set dims
+  const auto shape = cpu_tensor.sizes();
+  desc->dimensions = shape.size();
+  shapes->emplace_back(shape.cbegin(), shape.cend());
+  desc->shape = shapes->back().data();
 }
 } // namespace
 
@@ -267,10 +218,7 @@ bool OnnxifiOp<CPUContext>::RunOnDevice() {
     tensor_descriptor.shape = output_shapes_.back().data();
     std::vector<int64_t> tensor_dims_int64;
     std::copy(tensor_dims.cbegin(), tensor_dims.cend(), std::back_inserter(tensor_dims_int64));
-    auto* output_tensor = Output(
-        i,
-        tensor_dims_int64,
-        at::dtype(OnnxifiTypeToDataType(type)).device(CPU));
+    auto* output_tensor = Output(i, tensor_dims_int64, at::dtype(OnnixfiTypeToDataType(type)).device(CPU));
     SetOutputTensorDescriptorTypeAndBuffer(
         type, output_tensor, &tensor_descriptor);
   }

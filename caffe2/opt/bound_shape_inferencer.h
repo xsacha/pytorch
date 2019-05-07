@@ -61,8 +61,7 @@ class CAFFE2_API BoundShapeInferencer {
       const std::string& name,
       ShapeInfo::DimType t,
       std::vector<int64_t> bound_dims,
-      TensorProto::DataType type,
-      bool is_quantized);
+      TensorProto::DataType type);
 
   void InferConcatInputs(const OperatorDef& op);
 
