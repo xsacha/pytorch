@@ -47,6 +47,10 @@ def cuda_only(inner):
         inner(self, *args, **kwargs)
     return outer
 
+def _get_torch_cuda_version():
+    return [int(x) for x in torch.version.cuda.split(".")] if torch.version.cuda else [0, 0]
+
+
 class TestSparse(TestCase):
 
     def setUp(self):

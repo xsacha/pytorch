@@ -10,7 +10,6 @@
 #include <ATen/native/cuda/MiscUtils.h>
 #include <ATen/native/Resize.h>
 #include <ATen/native/BatchLinearAlgebra.h>
-#include <ATen/native/cuda/BatchLinearAlgebraLib.h>
 #include <ATen/native/cpu/zmath.h>
 
 #include <THC/THC.h> // for USE_MAGMA
@@ -18,10 +17,6 @@
 #ifdef USE_MAGMA
 #include <magma_types.h>
 #include <magma_v2.h>
-
-const bool use_magma_ = true;
-#else
-const bool use_magma_ = false;
 
 #endif
 
@@ -1469,7 +1464,7 @@ AT_ERROR("inverse: MAGMA library not found in "
 #endif
 }
 
-Tensor _inverse_helper_cuda_legacy(const Tensor& self) {
+Tensor _inverse_helper_cuda(const Tensor& self) {
   auto self_inv_working_copy = cloneBatchedColumnMajor(self);
   if (self.dim() > 2) {
     auto infos_lu = at::zeros({std::max<int64_t>(1, batchCount(self))}, self.options().dtype(kInt));
@@ -1492,51 +1487,6 @@ Tensor _inverse_helper_cuda_legacy(const Tensor& self) {
     singleCheckErrors(infos_getri.item().toInt(), "inverse_cuda");
   }
   return self_inv_working_copy;
-}
-
-Tensor _inverse_helper_cuda(const Tensor& self) {
-#ifdef USE_CUSOLVER
-  if ((self.dim() == 2) || (/* self.dim() > 2 && */ batchCount(self) <= 2) || !use_magma_) {
-    return _inverse_helper_cuda_lib(self);    // cusolver or cublas
-  } else {
-    return _inverse_helper_cuda_legacy(self); // magma-cuda
-  }
-#else
-  return _inverse_helper_cuda_legacy(self); // magma-cuda
-#endif
-}
-
-// This is a type dispatching helper function for 'apply_batched_inverse' and 'singleCheckErrors'
-Tensor& _linalg_inv_out_helper_cuda_legacy(Tensor& result, Tensor& infos_lu, Tensor& infos_getri) {
-  // assuming result is in column major order and contains the matrices to invert
-  if (result.dim() > 2) {
-    auto input_working_copy = cloneBatchedColumnMajor(result);
-    AT_DISPATCH_FLOATING_AND_COMPLEX_TYPES(result.scalar_type(), "linalg_inv_out_cuda", [&]{
-      apply_batched_inverse<scalar_t>(
-        input_working_copy, result, infos_lu, infos_getri);
-    });
-  } else {
-    AT_DISPATCH_FLOATING_AND_COMPLEX_TYPES(result.scalar_type(), "linalg_inv_out_cuda", [&]{
-      apply_single_inverse<scalar_t>(result, infos_lu, infos_getri);
-    });
-  }
-  return result;
-}
-
-// This is a MAGMA/cuSOLVER dispatching helper function
-Tensor& _linalg_inv_out_helper_cuda(Tensor &result, Tensor& infos_lu, Tensor& infos_getri) {
-  // This function calculates the inverse matrix in-place
-  // result should be in column major order and contain matrices to invert
-#ifdef USE_CUSOLVER
-  if ((result.dim() == 2) || (/* result.dim() > 2 && */ batchCount(result) <= 2) || !use_magma_) {
-    return _linalg_inv_out_helper_cuda_lib(result, infos_lu, infos_getri);  // cusolver or cublas
-  } else {
-    return _linalg_inv_out_helper_cuda_legacy(result, infos_lu, infos_getri);  // magma-cuda
-  }
-#else
-  return _linalg_inv_out_helper_cuda_legacy(result, infos_lu, infos_getri);  // magma-cuda
-#endif
-  return result;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ cholesky_solve ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
