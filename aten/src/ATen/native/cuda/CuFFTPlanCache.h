@@ -1,7 +1,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <ATen/Config.h>
-#include <ATen/native/cuda/CuFFTUtils.h>
+//#include <ATen/native/cuda/CuFFTUtils.h>
 #include <ATen/native/utils/ParamsHash.h>
 
 #include <list>
@@ -10,8 +10,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <limits>
-#include <cufft.h>
-#include <cufftXt.h>
+//#include <cufft.h>
+//#include <cufftXt.h>
 
 namespace at { namespace native { namespace detail {
 
@@ -29,9 +29,9 @@ struct CuFFTParams
 {
   int64_t signal_ndim_; // between 1 and max_rank, i.e., 1 <= signal_ndim <= 3
   // These include additional batch dimension as well.
-  int64_t sizes_[max_rank + 1];
-  int64_t input_strides_[max_rank + 1];
-  int64_t output_strides_[max_rank + 1];
+  int64_t sizes_[3 + 1];
+  int64_t input_strides_[3 + 1];
+  int64_t output_strides_[3 + 1];
   CuFFTTransformType fft_type_;
   ScalarType value_type_;
 
@@ -47,7 +47,7 @@ struct CuFFTParams
 
     TORCH_INTERNAL_ASSERT(in_strides.size() == signal_sizes.size());
     TORCH_INTERNAL_ASSERT(out_strides.size() == signal_sizes.size());
-    TORCH_INTERNAL_ASSERT(1 <= signal_ndim_ && signal_ndim_ <= max_rank);
+    TORCH_INTERNAL_ASSERT(1 <= signal_ndim_ && signal_ndim_ <= 3);
 
     std::copy(signal_sizes.cbegin(), signal_sizes.cend(), sizes_);
     std::copy(in_strides.cbegin(), in_strides.cend(), input_strides_);
@@ -95,7 +95,7 @@ inline CuFFTTransformType GetCuFFTTransformType(bool complex_input, bool complex
   TORCH_INTERNAL_ASSERT(false, "Real to real FFTs are not supported");
 }
 
-
+/*
 class CuFFTHandle {
   ::cufftHandle handle_;
 public:
@@ -113,7 +113,7 @@ public:
     cufftDestroy(handle_);
 #endif
   }
-};
+};*/
 
 __forceinline__
 static bool is_pow_of_two(int64_t x) {
@@ -331,7 +331,7 @@ public:
 #endif
 
     // disable auto allocation of workspace to use THC allocator
-    CUFFT_CHECK(cufftSetAutoAllocation(plan(), /* autoAllocate */ 0));
+    //CUFFT_CHECK(cufftSetAutoAllocation(plan(), /* autoAllocate */ 0));
 
     size_t ws_size_t;
 
@@ -348,10 +348,10 @@ public:
         /* onembed */ nullptr, /* base_ostride */ 1, /* odist */ 1,
         exec_type, batch, &ws_size_t));
 #else
-      CUFFT_CHECK(cufftXtMakePlanMany(plan(), signal_ndim, signal_sizes.data(),
-        /* inembed */ nullptr, /* base_istride */ 1, /* idist */ 1, itype,
-        /* onembed */ nullptr, /* base_ostride */ 1, /* odist */ 1, otype,
-        batch, &ws_size_t, exec_type));
+      //CUFFT_CHECK(cufftXtMakePlanMany(plan(), signal_ndim, signal_sizes.data(),
+      //  /* inembed */ nullptr, /* base_istride */ 1, /* idist */ 1, itype,
+      //  /* onembed */ nullptr, /* base_ostride */ 1, /* odist */ 1, otype,
+      //  batch, &ws_size_t, exec_type));
 #endif
     } else {
 #ifdef __HIP_PLATFORM_HCC__
@@ -360,16 +360,16 @@ public:
         out_layout.embed.data(), out_layout.stride, out_layout.dist,
         exec_type, batch, &ws_size_t));
 #else
-      CUFFT_CHECK(cufftXtMakePlanMany(plan(), signal_ndim, signal_sizes.data(),
-            in_layout.embed.data(), in_layout.stride, in_layout.dist, itype,
-            out_layout.embed.data(), out_layout.stride, out_layout.dist, otype,
-            batch, &ws_size_t, exec_type));
+      //CUFFT_CHECK(cufftXtMakePlanMany(plan(), signal_ndim, signal_sizes.data(),
+      //      in_layout.embed.data(), in_layout.stride, in_layout.dist, itype,
+      //      out_layout.embed.data(), out_layout.stride, out_layout.dist, otype,
+      //      batch, &ws_size_t, exec_type));
 #endif
     }
     ws_size = static_cast<int64_t>(ws_size_t);
   }
 
-  const cufftHandle &plan() const { return plan_ptr.get(); }
+  //const cufftHandle &plan() const { return plan_ptr.get(); }
 
   CuFFTTransformType transform_type() const { return fft_type_; }
   ScalarType data_type() const { return value_type_; }
@@ -377,7 +377,7 @@ public:
   int64_t workspace_size() const { return ws_size; }
 
 private:
-  CuFFTHandle plan_ptr;
+  //CuFFTHandle plan_ptr;
   bool clone_input;
   int64_t ws_size;
   CuFFTTransformType fft_type_;

@@ -10,15 +10,15 @@
 #include <ATen/native/Resize.h>
 #include <ATen/native/TensorIterator.h>
 #include <ATen/native/SpectralOpsUtils.h>
-#include <ATen/native/cuda/CuFFTUtils.h>
+//#include <ATen/native/cuda/CuFFTUtils.h>
 #include <ATen/native/cuda/CuFFTPlanCache.h>
 #include <THC/THCTensorSort.cuh>
 #include <THC/THCThrustAllocator.cuh>
 
 #include <thrust/execution_policy.h>
 #include <thrust/unique.h>
-#include <cufft.h>
-#include <cufftXt.h>
+//#include <cufft.h>
+//#include <cufftXt.h>
 #include <vector>
 #include <cmath>
 
@@ -135,7 +135,7 @@ REGISTER_DISPATCH(fft_fill_with_conjugate_symmetry_stub, &_fft_fill_with_conjuga
 // Execute a pre-planned tranform
 static void exec_cufft_plan(
     const CuFFTConfig &config, void* in_data, void* out_data, bool forward) {
-  auto& plan = config.plan();
+  //auto& plan = config.plan();
 #ifdef __HIP_PLATFORM_HCC__
   auto value_type = config.data_type();
   if (value_type == kFloat) {
@@ -179,8 +179,8 @@ static void exec_cufft_plan(
   }
   TORCH_CHECK(false, "hipFFT doesn't support transforms on type: ", value_type);
 #else
-  CUFFT_CHECK(cufftXtExec(plan, in_data, out_data,
-                          forward ? CUFFT_FORWARD : CUFFT_INVERSE));
+  //CUFFT_CHECK(cufftXtExec(plan, in_data, out_data,
+  //                        forward ? CUFFT_FORWARD : CUFFT_INVERSE));
 #endif
 }
 
@@ -231,7 +231,7 @@ static inline Tensor _run_cufft(
     IntArrayRef checked_signal_sizes, fft_norm_mode norm, bool onesided,
     IntArrayRef output_sizes, bool input_was_cloned
 ) {
-  if (config.should_clone_input() && !input_was_cloned) {
+  /*if (config.should_clone_input() && !input_was_cloned) {
     input = input.clone(at::MemoryFormat::Contiguous);
   }
 
@@ -276,6 +276,7 @@ static inline Tensor _run_cufft(
     at::native::_fft_fill_with_conjugate_symmetry_(out_as_complex, signal_dims);
   }
   return output;
+  */
 }
 
 // The cuFFT plan cache

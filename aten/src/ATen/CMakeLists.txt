@@ -323,7 +323,6 @@ if(USE_CUDA AND NOT USE_ROCM)
       ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusparse_static.a
       ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcurand_static.a
       ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcublas_static.a
-      ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcufft_static_nocallback.a
       ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusolver_static.a
       ${CUDA_TOOLKIT_ROOT_DIR}/lib64/liblapack_static.a     # needed for libcusolver_static
       )
