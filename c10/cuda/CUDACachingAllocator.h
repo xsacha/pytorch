@@ -58,7 +58,7 @@ enum struct StatType : uint64_t {
   NUM_TYPES = 3  // remember to update this whenever a new stat type is added
 };
 
-typedef std::array<Stat, static_cast<size_t>(StatType::NUM_TYPES)> StatArray;
+typedef std::array<Stat, 3> StatArray;
 
 // Struct containing memory allocator summary statistics for a device.
 struct DeviceStats {

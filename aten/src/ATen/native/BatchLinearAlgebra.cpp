@@ -714,7 +714,7 @@ static Tensor& linalg_inv_out_info(Tensor& result, Tensor& infos_lu, Tensor& inf
   infos_lu.fill_(0);
   infos_getri.fill_(0);
 
-  result = at::_linalg_inv_out_helper_(result, infos_lu, infos_getri);
+  result = _linalg_inv_out_helper_cpu(result, infos_lu, infos_getri);
   return result;
 }
 

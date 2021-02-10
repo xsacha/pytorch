@@ -9006,7 +9006,6 @@
   variants: function
   dispatch:
     CPU: _linalg_inv_out_helper_cpu
-    CUDA: _linalg_inv_out_helper_cuda
 
 - func: linalg_inv(Tensor self) -> Tensor
   python_module: linalg

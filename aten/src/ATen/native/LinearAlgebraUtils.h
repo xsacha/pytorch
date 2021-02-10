@@ -1,3 +1,4 @@
+#pragma once
 #include <c10/core/ScalarType.h>
 #include <ATen/ATen.h>
 #include <ATen/ExpandUtils.h>
@@ -242,7 +243,7 @@ static inline std::tuple<Tensor, Tensor, Tensor> _create_U_S_VT(const Tensor& in
   // U, S, VT are initialized as empty tensors.
   // For CPU LAPACK and GPU MAGMA backend, the tensors are initialized on CPU.
   // For GPU cuSOLVER backend, the tensors are initialized on GPU.
-  const auto usvt_device = svd_use_cusolver ? at::kCUDA : at::kCPU;
+  const auto usvt_device = /*svd_use_cusolver ? at::kCUDA :*/ at::kCPU;
 
   auto sizes = input.sizes().vec();
   int64_t m = input.size(-2), n = input.size(-1);

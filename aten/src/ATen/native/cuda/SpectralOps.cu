@@ -411,7 +411,8 @@ static Tensor& _exec_fft(Tensor& out, const Tensor& self, IntArrayRef out_sizes,
     uncached_plan.emplace(Params);
     config = &uncached_plan.value();
   }
-
+  return out;
+/*
   auto & plan = config->plan();
 
   if (config->should_clone_input()) {
@@ -437,6 +438,7 @@ static Tensor& _exec_fft(Tensor& out, const Tensor& self, IntArrayRef out_sizes,
     out_strides[dim_permute[i]] = out.strides()[1 + (i - batch_dims)];
   }
   return out.as_strided_(out_sizes, out_strides, out.storage_offset());
+  */
 }
 
 // Calculates the normalization constant and applies it in-place to self
