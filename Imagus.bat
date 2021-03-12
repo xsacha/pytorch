@@ -11,9 +11,9 @@ mkdir build
 
 set TORCH_CUDA_ARCH_LIST=5.0;6.0;6.1;7.0;7.5;8.6
 set TORCH_NVCC_FLAGS=-Xfatbin -compress-all
-set "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1"
-set "CMAKE_INCLUDE_PATH=%~dp0\mkl\include;C:\work\ifaceengine\pre_built\cudnn80\include"
-set "LIB=%~dp0\mkl\lib;C:\work\ifaceengine\pre_built\cudnn80\lib\x64;%LIB%"
+set "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2"
+set "CMAKE_INCLUDE_PATH=%~dp0\mkl\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include"
+set "LIB=%~dp0\mkl\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\lib\x64;%LIB%"
 set "USE_DISTRIBUTED=0"
 set "BUILD_TEST=0"
 set "BUILD_SHARED_LIBS=1"
